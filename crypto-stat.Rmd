@@ -1,0 +1,89 @@
+---
+title: "Crypto_analysis"
+author: "Simon Kwok"
+date: "8/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(zoo)
+library(xts)
+library(TTR)
+library(quantmod)
+library(ggplot2)
+library(dplyr)
+library(PerformanceAnalytics)
+library(corrplot)
+
+```
+
+```{r}
+#Define data loading
+Symbols<-c("BTC-USD","ETH-USD","ADA-USD","BNB-USD","USDT-USD","DX-Y.NYB","GC=F","TSLA")
+length(Symbols)
+
+#Set start date
+start_date=as.Date("2014-01-01")
+
+#Set date
+d <- as.POSIXlt(as.Date(Sys.Date()))
+dyear <- d
+dyear$year <- dyear$year-1
+
+#Get data from Yahoo for stock
+data <- getSymbols(Symbols,
+                   src='yahoo',
+                   #from=dyear,
+                   symbol.lookup = TRUE,
+                   #to=d,
+                   autoassign=FALSE,
+                   from=start_date)
+
+na.omit(`BTC-USD`,`ETH-USD`,`ADA-USD`,`BNB-USD`,`USDT-USD`,`DX-Y.NYB`,GC=F,TSLA)
+
+```
+
+```{r}
+#Put data in dataframe
+df1 <- fortify(`BTC-USD`)
+df2 <- fortify(`ETH-USD`)
+df3 <- fortify(`ADA-USD`)
+df4 <- fortify(`BNB-USD`)
+df5 <- fortify(`USDT-USD`)
+df6 <- fortify(`DX-Y.NYB`)
+df7 <- fortify(`GC=F`)
+df8 <- fortify(TSLA)
+
+#Combine data in one file
+df <- full_join(df1, df2,by = "Index")
+df <- full_join(df, df3, by = "Index")
+df <- full_join(df, df4, by = "Index")
+df <- full_join(df, df5, by = "Index")
+df <- full_join(df, df6, by = "Index")
+df <- full_join(df, df7, by = "Index")
+df <- full_join(df, df8, by = "Index")
+attach(df)
+
+```
+
+
+```{r}
+#EDA
+str(df)
+names(df)
+
+```
+
+
+```{r}
+#Correlation matrix
+dfc <- df[, c(5,11,17,23,29,35,41,47)]
+chart.Correlation(dfc, histogram=TRUE, pch=19)
+
+#correlogram
+dfcm <- cor(dfc, use= "complete.obs")
+
+corrplot(dfcm, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+
+```
